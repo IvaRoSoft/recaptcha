@@ -28,6 +28,17 @@ require __DIR__ . '/appengine-https.php';
 // not install via Composer.
 require_once __DIR__ . '/../vendor/autoload.php';
 
+$recaptchaNonce = base64_encode(openssl_random_pseudo_bytes(16));
+$inlineNonce = base64_encode(openssl_random_pseudo_bytes(16));
+$gaIncNonce = base64_encode(openssl_random_pseudo_bytes(16));
+$gaCfgNonce = base64_encode(openssl_random_pseudo_bytes(16));
+
+header("Content-Security-Policy: "
+    ."script-src 'nonce-".$inlineNonce."' 'nonce-".$recaptchaNonce."' 'nonce-".$gaIncNonce."' 'nonce-".$gaCfgNonce."' 'strict-dynamic'; "
+    ."object-src 'none'; "
+    ."base-uri 'none'; "
+);
+
 // Register API keys at https://www.google.com/recaptcha/admin
 $siteKey = '';
 $secret = '';
@@ -82,8 +93,8 @@ else:
     </ol>
     <p><a href="/recaptcha-v3-request-scores.php">⟳ Try again</a></p>
 
-    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo $siteKey; ?>"></script>
-    <script>
+    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo $siteKey; ?>" nonce="<?php echo $recaptchaNonce; ?>"></script>
+    <script nonce="<?php echo $inlineNonce; ?>">
     const steps = document.getElementById('recaptcha-steps');
     grecaptcha.ready(function() {
         document.querySelector('.step1').style.display = 'list-item';
@@ -105,5 +116,5 @@ endif;?>
 </main>
 
 <!-- Google Analytics - just ignore this -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-123057962-1"></script>
-<script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'UA-123057962-1');</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-123057962-1" nonce="<?php echo $gaIncNonce; ?>"></script>
+<script nonce="<?php echo $gaCfgNonce; ?>">window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'UA-123057962-1');</script>
