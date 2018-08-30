@@ -33,7 +33,8 @@ $inlineNonce = base64_encode(openssl_random_pseudo_bytes(16));
 $gaIncNonce = base64_encode(openssl_random_pseudo_bytes(16));
 $gaCfgNonce = base64_encode(openssl_random_pseudo_bytes(16));
 
-header("Content-Security-Policy: "
+header(
+    "Content-Security-Policy: "
     ."script-src 'nonce-".$inlineNonce."' 'nonce-".$recaptchaNonce."' 'nonce-".$gaIncNonce."' 'nonce-".$gaCfgNonce."' 'strict-dynamic'; "
     ."object-src 'none'; "
     ."base-uri 'none'; "
