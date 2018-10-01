@@ -28,15 +28,25 @@ require __DIR__ . '/appengine-https.php';
 // not install via Composer.
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// This example also highlights the use of a Content Security Policy
+// https://developers.google.com/web/fundamentals/security/csp/
+// Below we're generating pseudorandom identifiers for each of the inline blocks
+// of JavaScript code in the page
 $recaptchaNonce = base64_encode(openssl_random_pseudo_bytes(16));
 $inlineNonce = base64_encode(openssl_random_pseudo_bytes(16));
 $gaIncNonce = base64_encode(openssl_random_pseudo_bytes(16));
 $gaCfgNonce = base64_encode(openssl_random_pseudo_bytes(16));
 
+// Here we're sending the Content Security Policy header which states:
+// -script-src: only the script tags including these specific nonces are allowed to execute
+// - object-src: none - no object, embed, or applet tags allowed
+// - style-src: self - only this domain is allowed to load styles
+// - base-uri: none - the base tag cannot be applied
 header(
     "Content-Security-Policy: "
-    ."script-src 'nonce-".$inlineNonce."' 'nonce-".$recaptchaNonce."' 'nonce-".$gaIncNonce."' 'nonce-".$gaCfgNonce."' 'strict-dynamic'; "
+    ."script-src 'nonce-".$inlineNonce."' 'nonce-".$recaptchaNonce."' 'nonce-".$gaIncNonce."' 'nonce-".$gaCfgNonce."'; "
     ."object-src 'none'; "
+    ."style-src 'self'; "
     ."base-uri 'none'; "
 );
 
@@ -70,7 +80,6 @@ $lang = 'en';
 <meta property="og:description" content="reCAPTCHA demo - Request scores" />
 <link rel="stylesheet" type="text/css" href="/examples.css">
 <title>reCAPTCHA demo - Request scores</title>
-
 <header>
     <h1>reCAPTCHA demo</h1><h2>Request scores</h2>
     <p><a href="/">↤ Home</a></p>
@@ -88,9 +97,9 @@ else:
     <p>reCAPTCHA will provide a score for this request.</p>
     <ol id="recaptcha-steps">
         <li class="step0">reCAPTCHA script loading</li>
-        <li style="display:none" class="step1"><kbd>grecaptcha.ready()</kbd> fired, calling <pre>grecaptcha.execute('<?php echo $siteKey; ?>', {action: 'homepage'})'</pre></li>
-        <li style="display:none" class="step2">Received token from reCAPTCHA service, sending to our backend with <kbd>fetch('/recaptcha-v3-verify.php?token='+<span class="token">123</span>)</kbd></li>
-        <li style="display:none" class="step3">Received response from our backend: <pre class="response">response</pre></li>
+        <li class="step1 hidden"><kbd>grecaptcha.ready()</kbd> fired, calling <pre>grecaptcha.execute('<?php echo $siteKey; ?>', {action: 'homepage'})'</pre></li>
+        <li class="step2 hidden">Received token from reCAPTCHA service, sending to our backend with <kbd>fetch('/recaptcha-v3-verify.php?token='+<span class="token">123</span>)</kbd></li>
+        <li class="step3 hidden">Received response from our backend: <pre class="response">response</pre></li>
     </ol>
     <p><a href="/recaptcha-v3-request-scores.php">⟳ Try again</a></p>
 
@@ -98,15 +107,15 @@ else:
     <script nonce="<?php echo $inlineNonce; ?>">
     const steps = document.getElementById('recaptcha-steps');
     grecaptcha.ready(function() {
-        document.querySelector('.step1').style.display = 'list-item';
+        document.querySelector('.step1').classList.remove('hidden');
         grecaptcha.execute('<?php echo $siteKey; ?>', {action: 'homepage'}).then(function(token) {
             document.querySelector('.token').innerHTML = token;
-            document.querySelector('.step2').style.display = 'list-item';
+            document.querySelector('.step2').classList.remove('hidden');
 
             fetch('/recaptcha-v3-verify.php?token='+token).then(function(response) {
                 response.json().then(function(data) {
                     document.querySelector('.response').innerHTML = JSON.stringify(data, null, 2);
-                    document.querySelector('.step3').style.display = 'list-item';
+                    document.querySelector('.step3').classList.remove('hidden');
                 });
             });
         });
