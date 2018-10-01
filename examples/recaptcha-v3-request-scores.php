@@ -30,23 +30,18 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 // This example also highlights the use of a Content Security Policy
 // https://developers.google.com/web/fundamentals/security/csp/
-// Below we're generating pseudorandom identifiers for each of the inline blocks
-// of JavaScript code in the page
 $recaptchaNonce = base64_encode(openssl_random_pseudo_bytes(16));
 $inlineNonce = base64_encode(openssl_random_pseudo_bytes(16));
 $gaIncNonce = base64_encode(openssl_random_pseudo_bytes(16));
 $gaCfgNonce = base64_encode(openssl_random_pseudo_bytes(16));
 
-// Here we're sending the Content Security Policy header which states:
-// -script-src: only the script tags including these specific nonces are allowed to execute
-// - object-src: none - no object, embed, or applet tags allowed
-// - style-src: self - only this domain is allowed to load styles
-// - base-uri: none - the base tag cannot be applied
 header(
     "Content-Security-Policy: "
+    ."default-src 'self'; "
     ."script-src 'nonce-".$inlineNonce."' 'nonce-".$recaptchaNonce."' 'nonce-".$gaIncNonce."' 'nonce-".$gaCfgNonce."'; "
+    ."img-src www.gstatic.com www.google-analytics.com; "
+    ."frame-src www.google.com; "
     ."object-src 'none'; "
-    ."style-src 'self'; "
     ."base-uri 'none'; "
 );
 
